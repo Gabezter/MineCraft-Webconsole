@@ -28,6 +28,6 @@ input[type=submit]{
     text-align: center;
 }
 
-html{
+html body{
     font-size: 25px;
 }
