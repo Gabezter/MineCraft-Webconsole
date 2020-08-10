@@ -7,6 +7,7 @@ form {
     border: 3px solid green;
     padding: 10px;
     margin-top: 10%;
+    font-size: 25px;
 }
 
 label, input {
@@ -26,8 +27,4 @@ input[type=submit]{
 }
 #label{
     text-align: center;
-}
-
-body{
-    font-size: 25px;
 }
