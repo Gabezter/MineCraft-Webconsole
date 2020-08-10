@@ -43,3 +43,7 @@ header li a {
 header li a:hover {
     background-color: #111;
 }
+
+footer {
+    bottom: 0;
+}
