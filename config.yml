@@ -1,2 +1,3 @@
 name: River-Craft
-logo-picture:
+logo-picture: /var/www/html/static/res/logo.png
+logging:
