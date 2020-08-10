@@ -3,13 +3,23 @@
 <head>
     <title>Admin Page</title>
     <link rel="stylesheet" type="text/css" href="style/admin.css">
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        $(function () {
-            $("#header").load('partials/header.html');
-            C:\Users\gabez\Documents\GitHub\MineCraft-Webconsole\static\partials\header.html
-        });
-    </script> -->
+        fetch("partials/header.html")
+            .then(response => {
+                return response.text()
+            })
+            .then(data => {
+                document.querySelector("header").innerHTML = data;
+            });
+        fetch("partials/footer.html")
+            .then(response => {
+                return response.text()
+            })
+            .then(data => {
+                document.querySelector("footer").innerHTML = data;
+            });
+    </script>
 </head>
 <div id='header'>
     <object name='header' type='text/html' data='partials/header.html'></object>
@@ -29,5 +39,5 @@
         <form><input type="text" hint="Command"><input type="submit" value="Enter"></form>
     </div>
 </body>
-
+<footer></footer>
 </html>
