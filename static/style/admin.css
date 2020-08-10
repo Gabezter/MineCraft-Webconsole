@@ -1,0 +1,45 @@
+div.console {
+    margin: 0 auto;
+    margin-top: 30px;
+    padding: 5px;
+    align-self: center;
+    align-content: center;
+    display: flex;
+    flex-direction: column;
+    /* vertical-align: center; */
+    width: 75%;
+}
+
+div.console form input[type=text] {
+    width: 90%;
+}
+
+div.console form input[type=submit]{
+    width: 10%;
+}
+
+header ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+header li {
+    float: left;
+}
+
+header li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change the link color to #111 (black) on hover */
+
+header li a:hover {
+    background-color: #111;
+}

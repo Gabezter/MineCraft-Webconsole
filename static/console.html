@@ -1,0 +1,33 @@
+<html>
+
+<head>
+    <title>Admin Page</title>
+    <link rel="stylesheet" type="text/css" href="style/admin.css">
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(function () {
+            $("#header").load('partials/header.html');
+            C:\Users\gabez\Documents\GitHub\MineCraft-Webconsole\static\partials\header.html
+        });
+    </script> -->
+</head>
+<div id='header'>
+    <object name='header' type='text/html' data='partials/header.html'></object>
+    <!-- <img src="" alt='This is the logo'>
+    <ul>
+        <li><a href='admin/console'>Console</a></li>
+        <li><a href='admin/plugins'>Plugins</a></li>
+        <li><a href='admin/configs'>Configuration Files</a></li>
+        <li><a href='admin/users'>Accounts</a></li>
+        <li><a href='admin/logout'>Logout</a></li>
+    </ul> -->
+</div>
+
+<body>
+    <div class='console'>
+        <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
+        <form><input type="text" hint="Command"><input type="submit" value="Enter"></form>
+    </div>
+</body>
+
+</html>
