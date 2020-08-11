@@ -1,14 +1,14 @@
-body div form {
-    border: groove;
-}
-
 form {
     margin: auto;
     width: 20%;
     border: 3px solid green;
     padding: 10px;
-    margin-top: 10%;
+    margin-top: 15%;
     font-size: 25px;
+}
+
+body div form {
+    border: groove;
 }
 
 label, input {
@@ -29,8 +29,4 @@ input[type=submit] {
 
 #label {
     text-align: center;
-}
-
-body form {
-    font-size: 25px;
 }
