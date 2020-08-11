@@ -1,4 +1,4 @@
-'''Blueprint file for admin'''
+"""Blueprint file for admin"""
 from flask import Blueprint, url_for, render_template, make_response
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')

@@ -1,4 +1,4 @@
-'''App Init File'''
+"""App Init File"""
 from flask import Flask
 from app.admin import admin_bp
 
