@@ -9,7 +9,9 @@
 <body>
     <div class='console'>
         <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
+        {% if console_execute %}
         <form><input type="text" hint="Command"><input type="submit" value="Enter"></form>
+        {% endif %}
     </div>
 </body>
 <footer>{% include "footer.html" %}</footer>
