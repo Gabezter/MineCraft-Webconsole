@@ -1,0 +1,30 @@
+form {
+    margin: auto;
+    width: 20%;
+    border: 3px solid green;
+    padding: 10px;
+    margin-top: 15%;
+    font-size: 25px;
+}
+
+body div form {
+    border: groove;
+}
+
+label, input {
+    display: inline-block;
+}
+
+label {
+    width: 30%;
+    text-align: right;
+}
+
+input[type=submit] {
+    display: block;
+    margin: 0 auto;
+}
+
+#label {
+    text-align: center;
+}
