@@ -1,10 +1,6 @@
-from flask import Flask, url_for
+'''App Init File'''
+from flask import Flask
 from app.admin import admin_bp
-
-'''
-Basic File
-'''
-
 
 def app():
     app = Flask(__name__)

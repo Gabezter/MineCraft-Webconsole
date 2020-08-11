@@ -1,6 +1,4 @@
-'''
-Blueprint file for admin 
-'''
+'''Blueprint file for admin'''
 from flask import Blueprint, url_for, render_template, make_response
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -30,7 +28,6 @@ def Users():
 def Logout():  
     return make_response(render_template('logout.html'))
 
-
 class Responses:
     @staticmethod
     def get_header(self):
@@ -43,4 +40,3 @@ class Responses:
     def login(self):
         login = make_response(render_template('login.html'))
         return login 
-
