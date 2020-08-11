@@ -55,7 +55,7 @@ def page(page):
         return make_response(render_template('login.html'))
     elif page == 'console':
         url_for("static", filename='console.css')
-        return make_response(render_template('console.html'))
+        return make_response(render_template('console.html', console_execute=False))
     elif page == 'users':
         return make_response(render_template('users.html'))
     elif page == 'plugins':
