@@ -1,42 +1,64 @@
-"""Blueprint file for admin"""
-from flask import Blueprint, url_for, render_template, make_response
+"""Blueprint file for admin."""
+from flask import Blueprint, url_for, render_template, make_response, redirect, session, g, request, current_app
+import app.data_base as db
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def Login():
-    url_for("static", filename='login.css')
-    return make_response(render_template('login.html'))
+    return page('login')
+
 
 @admin_bp.route('/console')
 def Console():
-    url_for("static", filename='console.css')
-    url_for("static", filename='header.css')
-    url_for("static", filename='footer.css')
-    return make_response(render_template('console.html'))
+    return page('console')
+
 
 @admin_bp.route('/plugins')
 def Plugins():
-    return make_response(render_template('plugins.html'))
+    return page('plugins')
+
+
+@admin_bp.route('/configs')
+def Configuration():
+    return page('configs')
+
 
 @admin_bp.route('/users')
 def Users():
-    return make_response(render_template('users.html'))
+    return page('users')
+
 
 @admin_bp.route('/logout')
-def Logout():  
-    return make_response(render_template('logout.html'))
+def Logout():
+    session.clear()
+    return redirect(url_for('admin.Login'))
 
-class Responses:
-    @staticmethod
-    def get_header(self):
-        return render_template('header.html')
-    @staticmethod
-    def get_footer(self):
-        return render_template('footer.html')
 
-    @staticmethod
-    def login(self):
-        login = make_response(render_template('login.html'))
-        return login 
+@admin_bp.before_app_request
+def load_logged_in_user():
+    if(request.path != '/admin/login' and current_app.config['DEBUG'] is not True):
+        user_id = session.get('user_id')
+        if user_id is None:
+            g.user = None
+            return redirect(url_for('admin.Login'))
+        else:
+            g.user = db.get_user(user_id)
+
+
+def page(page):
+    url_for("static", filename='header.css')
+    url_for("static", filename='footer.css')
+    if page == 'login':
+        url_for("static", filename='login.css')
+        return make_response(render_template('login.html'))
+    elif page == 'console':
+        url_for("static", filename='console.css')
+        return make_response(render_template('console.html'))
+    elif page == 'users':
+        return make_response(render_template('users.html'))
+    elif page == 'plugins':
+        return make_response(render_template('plugins.html'))
+    elif page == 'configs':
+        return make_response(render_template('configs.html'))
