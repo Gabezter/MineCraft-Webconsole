@@ -1,0 +1,18 @@
+<html>
+
+<head>
+    <!-- <base href='http://192.168.78.3/static/'> -->
+    <title>Console Page</title>
+    <link rel="stylesheet" type="text/css" href="/static/console.css">
+</head>
+<header>{% include "header.html" %}</header>
+
+<body>
+    <div class='console'>
+        <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
+        <form><input type="text" hint="Command"><input type="submit" value="Enter"></form>
+    </div>
+</body>
+<footer>{% include "footer.html" %}</footer>
+
+</html>

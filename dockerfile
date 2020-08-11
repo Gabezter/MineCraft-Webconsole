@@ -9,6 +9,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 ENV FLASK_ENV=development
-ENV FLASK_APP=/usr/src/app/__init__.py:app
+ENV FLASK_APP=/usr/src/app/app/__init__.py:app
 
 CMD [ "sh", "./start.sh" ]
