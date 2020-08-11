@@ -1,7 +1,6 @@
 import sqlite3
 from flask import current_app, g, session
-import click
-import hashlib
+from app.util import hashify
 
 
 def get_db():
@@ -26,6 +25,9 @@ def init():
     db = get_db()
     with current_app.open_resource('sql/schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
+    pwd = hashify('ChangeMe1!')
+    db.execute("INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)",
+               'admin', pwd, 'Y', 'Y')
 
 
 def init_app(app):
@@ -51,7 +53,8 @@ def get_user(id):
 def create_user(user, password):
     db = get_db()
     try:
-        db.execute('INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)', user, password, 'Y', 'Y')
+        db.execute('INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)',
+                   user, password, 'Y', 'Y')
         db.commit()
     except:
         return (False)
@@ -62,26 +65,14 @@ def get_console_permissions(user):
     db = get_db()
     c = db.cursor()
     user_id = 1
-    console_perms = c.execute(
+    perms = c.execute(
         'SELECT * FROM console_permissions WHERE user_id=?', user_id)
     c.commit()
 
-    if (console_perms[1] == 'Y'):
-        stop = True
-    else:
-        stop = True
-    if (console_perms[2] == 'Y'):
-        start = False
-    else:
-        start = False
-    if (console_perms[3] == 'Y'):
-        cmd = True
-    else:
-        cmd = False
-    if (console_perms[4] == 'Y'):
-        admin = True
-    else:
-        admin = False
+    stop = yn_to_boolean(perms[1])
+    start = yn_to_boolean(perms[2])
+    cmd = yn_to_boolean(perms[3])
+    admin = yn_to_boolean(perms[4])
 
     session['permissions']['console'] = {
         'admin': admin,
@@ -97,26 +88,13 @@ def get_plugin_permissions(user):
     db = get_db()
     c = db.cursor()
     user_id = 1
-    console_perms = c.execute(
+    perms = c.execute(
         'SELECT * FROM plugin_permissions WHERE user_id=?', user_id)
     c.commit()
-
-    if (console_perms[1] == 'Y'):
-        upload = True
-    else:
-        upload = False
-    if (console_perms[2] == 'Y'):
-        remove = True
-    else:
-        remove = False
-    if (console_perms[3] == 'Y'):
-        e_config = True
-    else:
-        e_config = False
-    if (console_perms[4] == 'Y'):
-        admin = True
-    else:
-        admin = False
+    upload = yn_to_boolean(perms[1])
+    remove = yn_to_boolean(perms[2])
+    e_config = yn_to_boolean(perms[3])
+    admin = yn_to_boolean(perms[4])
 
     session['permissions']['plugin'] = {
         'admin': admin,
@@ -132,42 +110,18 @@ def get_user_permissions(user):
     db = get_db()
     c = db.cursor()
     user_id = 1
-    console_perms = c.execute(
+    perms = c.execute(
         'SELECT * FROM console_permissions WHERE user_id=?', user_id)
     c.commit()
 
-    if (console_perms[1] == 'Y'):
-        create = True
-    else:
-        create = False
-    if (console_perms[2] == 'Y'):
-        assign = True
-    else:
-        assign = False
-    if (console_perms[3] == 'Y'):
-        change = True
-    else:
-        change = False
-    if (console_perms[4] == 'Y'):
-        remove = True
-    else:
-        remove = False
-    if (console_perms[5] == 'Y'):
-        reset = True
-    else:
-        reset = False
-    if (console_perms[6] == 'Y'):
-        view = True
-    else:
-        view = False
-    if (console_perms[7] == 'Y'):
-        pause = True
-    else:
-        pause = False
-    if (console_perms[8] == 'Y'):
-        admin = True
-    else:
-        admin = False
+    create = yn_to_boolean(perms[1])
+    assign = yn_to_boolean(perms[2])
+    change = yn_to_boolean(perms[3])
+    remove = yn_to_boolean(perms[4])
+    reset = yn_to_boolean(perms[5])
+    view = yn_to_boolean(perms[6])
+    pause = yn_to_boolean(perms[7])
+    admin = yn_to_boolean(perms[8])
 
     session['permissions']['user'] = {
         'admin': admin,
@@ -183,13 +137,64 @@ def get_user_permissions(user):
     return ((admin, create, assign, change, remove, reset, view, pause))
 
 
-def set_user_permissions(user, create, assign, change, rmeove, reset, view, pause, admin):
-    pass
+def set_user_permissions(user, create=False, assign=False, change=False, remove=False, reset=False, view=False, pause=False, admin=False):
+    db = get_db()
+    create = boolean_to_yn(create)
+    change = boolean_to_yn(change)
+    remove = boolean_to_yn(remove)
+    reset = boolean_to_yn(reset)
+    view = boolean_to_yn(view)
+    pause = boolean_to_yn(pause)
+    admin = boolean_to_yn(admin)
+    assign = boolean_to_yn(assign)
+    try:
+        db.execute("INSERT INTO user_permissions (user_id, create_user, assign_perms, change_perms, remove_user, reset_pwd, view_users, pause_user, admin) VALUES (?,?,?,?,?,?,?,?,?)",
+                   get_user(user)[0], create, assign, change, remove, reset, view, pause, admin)
+        db.commit()
+    except:
+        return False
+    return True
 
 
-def set_plugin_permissions(user, upload, remove, e_config, admin):
-    pass
+def set_plugin_permissions(user, upload=False, remove=False, e_config=False, admin=False):
+    db = get_db()
+    upload = boolean_to_yn(upload)
+    e_config = boolean_to_yn(e_config)
+    remove = boolean_to_yn(remove)
+    admin = boolean_to_yn(admin)
+    try:
+        db.execute("INSERT INTO user_permissions (user_id, upload, remove, edit_config_files, admin) VALUES (?,?,?,?,?)",
+                   get_user(user)[0], upload, remove, e_config, admin)
+        db.commit()
+    except:
+        return False
+    return True
 
 
-def set_console_permissions(user, start, stop, admin, cmd):
-    pass
+def set_console_permissions(user, start=False, stop=False, admin=False, cmd=False):
+    db = get_db()
+    start = boolean_to_yn(start)
+    stop = boolean_to_yn(stop)
+    cmd = boolean_to_yn(cmd)
+    admin = boolean_to_yn(admin)
+    try:
+        db.execute("INSERT INTO user_permissions (user_id, stop_perm, start_perm, execute_cmd, admin) VALUES (?,?,?,?,?)",
+                   get_user(user)[0], stop, start, cmd, admin)
+        db.commit()
+    except:
+        return False
+    return True
+
+
+def boolean_to_yn(obj):
+    if obj == True:
+        return 'Y'
+    else:
+        return 'N'
+
+
+def yn_to_boolean(obj):
+    if obj == 'Y':
+        return True
+    else:
+        return False
