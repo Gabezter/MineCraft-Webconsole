@@ -1,4 +1,4 @@
-const baseHref = (document.getElementsByTagName('base')[0] || {}).href;
+baseHref = (document.getElementsByTagName('base')[0] || {}).href;
 
 fetch(baseHref + "/partials/footer.html")
     .then(response => {

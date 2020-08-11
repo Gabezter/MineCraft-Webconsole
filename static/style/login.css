@@ -1,6 +1,7 @@
 body div form {
     border: groove;
 }
+
 form {
     margin: auto;
     width: 20%;
@@ -20,11 +21,16 @@ label {
     /* Positions the label text beside the input */
     text-align: right;
 }
-input[type=submit]{
+
+input[type=submit] {
     display: block;
     margin: 0 auto;
-
 }
-#label{
+
+#label {
     text-align: center;
+}
+
+body form {
+    font-size: 25px;
 }
