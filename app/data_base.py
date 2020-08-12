@@ -44,17 +44,20 @@ def init_app(app):
 
 def get_user(username):
     db = get_db()
-    user = db.execute('SELECT * FROM user WHERE username = ?', (username,)).fetchone()
-    id = user[0]
+    user = db.execute('SELECT * FROM user WHERE username = ?',
+                      (username,)).fetchone()
+    uid = user[0]
     username = user[1]
     valid = yn_to_boolean(user[3])
     fl = yn_to_boolean(user[4])
-    return ((id, username, valid, fl))
+    return ((uid, username, valid, fl))
+
 
 def check_user(usr, pwd):
     db = get_db()
     print(usr)
-    user = db.execute('SELECT * FROM user WHERE username = ?', (usr,)).fetchone()
+    user = db.execute(
+        'SELECT * FROM user WHERE username = ?', (usr,)).fetchone()
     if user is None:
         return 1
     if (user['valid'] == 'Y'):
@@ -66,7 +69,8 @@ def check_user(usr, pwd):
         else:
             return 3
     else:
-        return 2   
+        return 2
+
 
 def create_user(user, password, console_perms, plugin_perms, user_perms):
     db = get_db()
@@ -79,15 +83,18 @@ def create_user(user, password, console_perms, plugin_perms, user_perms):
         return False
     return True
 
+
 def update_password(user, password):
     db = get_db()
     try:
-        db.execute('UPDATE user SET password = ?, first_login = ?, WHERE id = ?', (password, 'N', get_user(user)[0]))
+        db.execute('UPDATE user SET password = ?, first_login = ? WHERE id = ?',
+                   (password, 'N', get_user(user)[0]))
         db.commit()
     except Exception as e:
         print(e)
         return False
     return True
+
 
 def get_console_permissions():
     user = g.user

@@ -80,41 +80,109 @@ def load_logged_in_user():
         else:
             g.user = db.get_user(user_id)
 
-# TODO Set permissions
 
 def page(page):
     url_for("static", filename='header.css')
     url_for("static", filename='footer.css')
     if page == 'login':
-        url_for("static", filename='login.css')
-        return make_response(render_template('login.html', error=False, logout=False))
+        return login_page(p_invalid=False, p_error=False, p_logout=False)
     elif page == 'console':
-        url_for("static", filename='console.css')
-        return make_response(render_template('console.html', console_execute=False))
+        return console_page()
     elif page == 'users':
-        return make_response(render_template('users.html'))
+        return users_page()
     elif page == 'plugins':
-        return make_response(render_template('plugins.html'))
+        return plugins_page()
     elif page == 'configs':
-        return make_response(render_template('configs.html'))
+        return configs_page()
     elif page == 'e_login':
-        url_for("static", filename='login.css')
-        return make_response(render_template('login.html', error=True, logout=False))
+        return login_page(p_error=True, p_logout=False, p_invalid=False)
     elif page == 'logout_login':
         url_for("static", filename='login.css')
-        return make_response(render_template('login.html', error=False, logout=True))
+        return login_page(p_error=False, p_logout=True, p_invalid=False)
     elif page == 'first_login':
-        url_for("static", filename='first_login.css')
-        password_type = get_password_type()
-        return make_response(render_template('first_login.html', not_match=False, strict=password_type[2], tight=password_type[1], loose=password_type[0]))
+        return first_login_page(p_not_match=False, p_error=False)
     elif page == 'e_first_login':
-        url_for("static", filename='first_login.css')
-        password_type = get_password_type()
-        return make_response(render_template('first_login.html', error=True, not_match=False, strict=password_type[2], tight=password_type[1], loose=password_type[0]))
+        return first_login_page(p_not_match=False, p_error=True)
     elif page == 'e_nm_first_login':
-        url_for("static", filename='first_login.css')
-        password_type = get_password_type()
-        return make_response(render_template('first_login.html', error=True, not_match=True, strict=password_type[2], tight=password_type[1], loose=password_type[0]))
+        return first_login_page(p_not_match=True, p_error=True)
     elif page == 'invalid_user':
-        url_for("static", filename='login.css')
-        return make_response(render_template('login.html', error=True, logout=False, invalid=True))
+        return login_page(p_error=True, p_logout=False, p_invalid=True)
+
+
+def console_page():
+    url_for("static", filename='console.css')
+    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
+        m_start = session['permissions']['console']['stop']
+        m_stop = session['permissions']['console']['start']
+        m_console_execute = session['permissions']['console']['cmd']
+        m_admin = session['permissions']['console']['admin']
+    else:
+        m_start = True
+        m_stop = True
+        m_console_execute = True
+        m_admin = True
+    return make_response(render_template('console.html', console_execute=m_console_execute, start=m_start, stop=m_stop, admin=m_admin))
+
+
+def plugins_page():
+    url_for("static", filename='plugins.css')
+    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
+        m_admin = session['permissions']['plugins']['admin']
+        m_upload = session['permissions']['plugins']['upload']
+        m_remove = session['permissions']['plugins']['remove']
+        m_edit_configs = session['permissions']['plugins']['edit_configs']
+    else:
+        m_admin = True
+        m_upload = True
+        m_remove = True
+        m_edit_configs = True
+    return make_response(render_template('plugins.html', admin=m_admin, upload=m_upload, remove=m_remove, edit=m_edit_configs))
+
+
+def configs_page():
+    url_for("static", filename='configs.css')
+    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
+        m_admin = session['permissions']['plugins']['admin']
+        m_edit_configs = session['permissions']['plugins']['edit_configs']
+    else:
+        m_admin = True
+        m_edit_configs = True
+
+    return make_response(render_template('configs.html', admin=m_admin, edit=m_edit_configs))
+
+
+def users_page():
+    url_for("static", filename='users.css')
+    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
+        m_admin = session['permissions']['user']['admin']
+        m_create = session['permissions']['user']['create']
+        m_assign = session['permissions']['user']['assign']
+        m_change = session['permissions']['user']['change']
+        m_remove = session['permissions']['user']['remove']
+        m_reset = session['permissions']['user']['reset']
+        m_view = session['permissions']['user']['view']
+        m_pause = session['permissions']['user']['pause']
+    else:
+        m_admin = True
+        m_create = True
+        m_assign = True
+        m_change = True
+        m_remove = True
+        m_reset = True
+        m_view = True
+        m_pause = True
+    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause))
+
+
+def login_page(p_error=False, p_logout=False, p_invalid=False):
+    url_for("static", filename='login.css')
+    return make_response(render_template('login.html', error=p_error, logout=p_logout, invalid=p_invalid))
+
+
+def first_login_page(p_not_match=False, p_error=False):
+    url_for("static", filename='first_login.css')
+    password_type = get_password_type()
+    m_strict = password_type[2]
+    m_tight = password_type[1]
+    m_loose = password_type[0]
+    return make_response(render_template('first_login.html', error=p_error, not_match=p_error, strict=m_strict, tight=m_tight, loose=m_loose))
