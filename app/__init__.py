@@ -6,7 +6,7 @@ import app.data_base as db
 
 def app():
     app = Flask(__name__)
-    app.config.from_pyfile('application.cfg')
+    app.config.from_pyfile('application.conf')
     app.register_blueprint(admin_bp)
     db.init_app(app)
 
