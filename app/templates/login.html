@@ -7,20 +7,20 @@
 
 <body>
     <div>
-        <form>
+        <form method='post'>
             <div id='label'>Minecraft Console Login</div>
             <br>
-            <label for='usr'>Username</label> <input type='text' id='usr'>
+            <label for='usr'>Username</label> <input type='text' name='username' id='usr' required>
             <br>
             <br>
-            <label for='pwd'>Password</label> <input type='password' id='pwd'>
+            <label for='pwd'>Password</label> <input type='password'  name='password' id='pwd' required>
             <br>
             <br>
             <input type="submit" value='Login'>
         </form>
     </div><br><br>
-    <div id='error'> Incorrect Username/Password</div>
-    <div id='logout'> Successfully Logged Out</div>
+    {% if error %} <div id='error'> {% if invalid %} User is invalid. {% else %} Incorrect Username/Password {% endif %}</div> {% endif %}
+    {% if logout %} <div id='logout'> Successfully Logged Out.</div>{% endif %}
 </body>
 <footer>{% include "footer.html" %}</footer>
 
