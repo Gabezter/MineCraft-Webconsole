@@ -52,7 +52,7 @@ def page(page):
     url_for("static", filename='footer.css')
     if page == 'login':
         url_for("static", filename='login.css')
-        return make_response(render_template('login.html'))
+        return make_response(render_template('login.html', error=True, logout=True))
     elif page == 'console':
         url_for("static", filename='console.css')
         return make_response(render_template('console.html', console_execute=False))
@@ -62,3 +62,9 @@ def page(page):
         return make_response(render_template('plugins.html'))
     elif page == 'configs':
         return make_response(render_template('configs.html'))
+    elif page == 'e_login':
+        url_for("static", filename='login.css')
+        return make_response(render_template('login.html', error=True, logout=False) )
+    elif page == 'logout_login':
+        url_for("static", filename='login.css')
+        return make_response(render_template('login.html', error=False, logout=True) )

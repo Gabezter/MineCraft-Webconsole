@@ -22,42 +22,45 @@ def close_db(e=None):
 
 
 def init():
-    db = get_db()
-    with current_app.open_resource('sql/schema.sql') as f:
+    db = sqlite3.connect(
+        current_app.config['DATABASE'],
+        detect_types=sqlite3.PARSE_DECLTYPES
+    )
+    with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
     pwd = hashify('ChangeMe1!')
-    db.execute("INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)",
-               'admin', pwd, 'Y', 'Y')
+    user_perms = {'create': True, 'assign': True, 'change': True,
+                  'remove': True, 'reset': True, 'view': True, 'pause': True, 'admin': True}
+    plugin_perms = {'upload': False, 'remove': False,
+                    'e_config': False, 'admin': False}
+    console_perms = {'start': False, 'stop': False,
+                     'admin': False, 'cmd': False}
+    create_user("admin", pwd, console_perms, plugin_perms, user_perms)
 
 
 def init_app(app):
     app.teardown_appcontext(close_db)
 
 
-def get_user(id):
+def get_user(uid):
     db = get_db()
-    user = db.execute('SELECT * FROM user WHERE id = ?', id).fetchone()
+    user = db.execute('SELECT * FROM user WHERE id = ?', uid).fetchone()
     id = user[0]
     username = user[1]
-    if(user[3] == 'Y'):
-        valid = True
-    else:
-        valid = False
-    if(user[4] == 'Y'):
-        fl = True
-    else:
-        fl = False
+    valid = yn_to_boolean(user[3])
+    fl = yn_to_boolean(user[4])
     return ((id, username, valid, fl))
 
 
-def create_user(user, password):
+def create_user(user, password, console_perms, plugin_perms, user_perms):
     db = get_db()
     try:
         db.execute('INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)',
-                   user, password, 'Y', 'Y')
+                   (user, password, 'Y', 'Y'))
         db.commit()
-    except:
-        return (False)
+    except Exception as e:
+        print(e)
+        return False
     return True
 
 
@@ -67,7 +70,6 @@ def get_console_permissions(user):
     user_id = 1
     perms = c.execute(
         'SELECT * FROM console_permissions WHERE user_id=?', user_id)
-    c.commit()
 
     stop = yn_to_boolean(perms[1])
     start = yn_to_boolean(perms[2])
@@ -90,7 +92,7 @@ def get_plugin_permissions(user):
     user_id = 1
     perms = c.execute(
         'SELECT * FROM plugin_permissions WHERE user_id=?', user_id)
-    c.commit()
+
     upload = yn_to_boolean(perms[1])
     remove = yn_to_boolean(perms[2])
     e_config = yn_to_boolean(perms[3])
@@ -112,7 +114,6 @@ def get_user_permissions(user):
     user_id = 1
     perms = c.execute(
         'SELECT * FROM console_permissions WHERE user_id=?', user_id)
-    c.commit()
 
     create = yn_to_boolean(perms[1])
     assign = yn_to_boolean(perms[2])
@@ -149,9 +150,10 @@ def set_user_permissions(user, create=False, assign=False, change=False, remove=
     assign = boolean_to_yn(assign)
     try:
         db.execute("INSERT INTO user_permissions (user_id, create_user, assign_perms, change_perms, remove_user, reset_pwd, view_users, pause_user, admin) VALUES (?,?,?,?,?,?,?,?,?)",
-                   get_user(user)[0], create, assign, change, remove, reset, view, pause, admin)
+                   (get_user(user)[0], create, assign, change, remove, reset, view, pause, admin))
         db.commit()
-    except:
+    except Exception as e:
+        print(e)
         return False
     return True
 
@@ -164,9 +166,10 @@ def set_plugin_permissions(user, upload=False, remove=False, e_config=False, adm
     admin = boolean_to_yn(admin)
     try:
         db.execute("INSERT INTO user_permissions (user_id, upload, remove, edit_config_files, admin) VALUES (?,?,?,?,?)",
-                   get_user(user)[0], upload, remove, e_config, admin)
+                   (get_user(user)[0], upload, remove, e_config, admin))
         db.commit()
-    except:
+    except Exception as e:
+        print(e)
         return False
     return True
 
@@ -179,9 +182,10 @@ def set_console_permissions(user, start=False, stop=False, admin=False, cmd=Fals
     admin = boolean_to_yn(admin)
     try:
         db.execute("INSERT INTO user_permissions (user_id, stop_perm, start_perm, execute_cmd, admin) VALUES (?,?,?,?,?)",
-                   get_user(user)[0], stop, start, cmd, admin)
+                   (get_user(user)[0], stop, start, cmd, admin))
         db.commit()
-    except:
+    except Exception as e:
+        print(e)
         return False
     return True
 

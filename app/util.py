@@ -11,4 +11,4 @@ def generate_temp_password():
     return pwd
 
 def hashify(pwd):
-    return hashlib.blake2b(data=bytes(pwd), salt=bytes(current_app.config['PASSWORD_SALT']))
+    return hashlib.blake2b(pwd.encode('utf8'), salt=current_app.config['PASSWORD_SALT'].encode('utf8')).hexdigest()

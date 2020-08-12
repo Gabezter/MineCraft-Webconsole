@@ -1,7 +1,26 @@
+body div#logout {
+    border: groove;
+    margin: auto;
+    width: 35%;
+    padding: 10px;
+    font-size: 25px;
+    height: 2.5%;
+    text-align: center;
+}
+
+body div#error {
+    border: groove red;
+    margin: auto;
+    width: 35%;
+    padding: 10px;
+    font-size: 25px;
+    height: 2.5%;
+    text-align: center;
+}
+
 form {
     margin: auto;
     width: 20%;
-    border: 3px solid green;
     padding: 10px;
     margin-top: 15%;
     font-size: 25px;
@@ -11,7 +30,7 @@ body div form {
     border: groove;
 }
 
-label,
+label, 
 input {
     display: inline-block;
 }
