@@ -37,6 +37,7 @@ def get_password_type():
         tight = False
     return (loose, tight, strict)
 
+
 def check_password_strength(password):
     password_type = get_password_type()
     if password_type[0]:
@@ -57,10 +58,9 @@ def check_password_strength(password):
 
     # searching for symbols
     if password_type[2]:
-        symbol_error = re.search(r"[ ?!#$%&'()*+,-./[\\\]^_`{|}~"+r'"]', password) is not None
+        symbol_error = re.search(
+            r"[ ?!#$%&'()*+,-./[\\\]^_`{|}~"+r'"]', password) is not None
     else:
         symbol_error = True
-
-    print(length_error , digit_error , uppercase_error , lowercase_error , symbol_error)
 
     return length_error and digit_error and uppercase_error and lowercase_error and symbol_error

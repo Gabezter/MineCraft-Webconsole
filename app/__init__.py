@@ -8,11 +8,21 @@ def app():
     app = Flask(__name__)
     app.config.from_pyfile('application.conf')
     app.register_blueprint(admin_bp)
-    db.init_app(app)
+    # db.init_app(app)
 
     @app.route('/init')
     def init():
         db.init()
         return redirect(url_for('admin.Login'))
 
+    @app.route('/dump')
+    def dump():
+        db.getTableDump()
+        return "Check Console"
+
+    @app.route('/')
+    @app.route('/index')
+    @app.route('/login')
+    def index():
+        return redirect(url_for('admin.Login'))
     return app

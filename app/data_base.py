@@ -4,19 +4,16 @@ from app.util import hashify
 
 
 def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        g.db.row_factory = sqlite3.Row
+    db = sqlite3.connect(
+        current_app.config['DATABASE'],
+        detect_types=sqlite3.PARSE_DECLTYPES
+    )
 
-    return g.db
+    return db
 
 
 def close_db(e=None):
-    db = g.pop('db', None)
-
+    db = g.db
     if db is not None:
         db.close()
 
@@ -26,15 +23,16 @@ def init():
         current_app.config['DATABASE'],
         detect_types=sqlite3.PARSE_DECLTYPES
     )
+    g.db = db
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
     pwd = hashify('ChangeMe1!')
     user_perms = {'create': True, 'assign': True, 'change': True,
                   'remove': True, 'reset': True, 'view': True, 'pause': True, 'admin': True}
     plugin_perms = {'upload': False, 'remove': False,
-                    'e_config': False, 'admin': False}
+                    'e_config': False, 'admin': True}
     console_perms = {'start': False, 'stop': False,
-                     'admin': False, 'cmd': False}
+                     'admin': True, 'cmd': False}
     create_user("admin", pwd, console_perms, plugin_perms, user_perms)
 
 
@@ -46,23 +44,25 @@ def get_user(username):
     db = get_db()
     user = db.execute('SELECT * FROM user WHERE username = ?',
                       (username,)).fetchone()
-    uid = user[0]
-    username = user[1]
-    valid = yn_to_boolean(user[3])
-    fl = yn_to_boolean(user[4])
-    return ((uid, username, valid, fl))
+    if user is not None:
+        uid = user[0]
+        username = user[1]
+        valid = yn_to_boolean(user[3])
+        fl = yn_to_boolean(user[4])
+        return ((uid, username, valid, fl))
+    else:
+        return None
 
 
 def check_user(usr, pwd):
     db = get_db()
-    print(usr)
     user = db.execute(
         'SELECT * FROM user WHERE username = ?', (usr,)).fetchone()
     if user is None:
         return 1
-    if (user['valid'] == 'Y'):
-        if (pwd == user['password']):
-            if (user['first_login'] == 'Y'):
+    if (user[3] == 'Y'):
+        if (pwd == user[2]):
+            if (user[4] == 'Y'):
                 return -1
             else:
                 return 0
@@ -78,6 +78,14 @@ def create_user(user, password, console_perms, plugin_perms, user_perms):
         db.execute('INSERT INTO user (username, password, valid, first_login) VALUES (?,?,?,?)',
                    (user, password, 'Y', 'Y'))
         db.commit()
+        set_console_permissions(
+            user=user, db=db, start=console_perms['start'], stop=console_perms['stop'], admin=console_perms['admin'], cmd=console_perms['cmd'])
+        set_plugin_permissions(user=user, db=db, upload=plugin_perms['upload'], remove=plugin_perms['remove'],
+                               e_config=plugin_perms['e_config'], admin=plugin_perms['admin'])
+        set_user_permissions(user=user, db=db, create=user_perms['create'], assign=user_perms['assign'], change=user_perms['change'],
+                             remove=user_perms['remove'], reset=user_perms['reset'], view=user_perms['view'], pause=user_perms['pause'], admin=user_perms['admin'])
+        db.commit()
+        # db.close()
     except Exception as e:
         print(e)
         return False
@@ -86,10 +94,14 @@ def create_user(user, password, console_perms, plugin_perms, user_perms):
 
 def update_password(user, password):
     db = get_db()
+    user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     try:
         db.execute('UPDATE user SET password = ?, first_login = ? WHERE id = ?',
-                   (password, 'N', get_user(user)[0]))
+                   (password, 'N', user_id))
         db.commit()
+        db.close()
     except Exception as e:
         print(e)
         return False
@@ -97,13 +109,14 @@ def update_password(user, password):
 
 
 def get_console_permissions():
-    user = g.user
+    user = session['username']
     db = get_db()
-    c = db.cursor()
     user_id = get_user(user)[0]
-    perms = c.execute(
-        'SELECT * FROM console_permissions WHERE user_id=?', (user_id,))
-
+    if user_id is None:
+        return False
+    perms = db.execute(
+        'SELECT * FROM console_permissions WHERE user_id=?', (user_id,)).fetchone()
+    print(user_id, perms)
     stop = yn_to_boolean(perms[1])
     start = yn_to_boolean(perms[2])
     cmd = yn_to_boolean(perms[3])
@@ -120,12 +133,14 @@ def get_console_permissions():
 
 
 def get_plugin_permissions():
-    user = g.user
+    user = session['username']
     db = get_db()
     c = db.cursor()
     user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     perms = c.execute(
-        'SELECT * FROM plugin_permissions WHERE user_id=?', (user_id,))
+        'SELECT * FROM plugins_permissions WHERE user_id=?', (user_id,))
 
     upload = yn_to_boolean(perms[1])
     remove = yn_to_boolean(perms[2])
@@ -143,12 +158,14 @@ def get_plugin_permissions():
 
 
 def get_user_permissions():
-    user = g.user
+    user = session['username']
     db = get_db()
     c = db.cursor()
     user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     perms = c.execute(
-        'SELECT * FROM console_permissions WHERE user_id=?', (user_id,))
+        'SELECT * FROM user_permissions WHERE user_id=?', (user_id,))
 
     create = yn_to_boolean(perms[1])
     assign = yn_to_boolean(perms[2])
@@ -173,8 +190,7 @@ def get_user_permissions():
     return ((admin, create, assign, change, remove, reset, view, pause))
 
 
-def set_user_permissions(user, create=False, assign=False, change=False, remove=False, reset=False, view=False, pause=False, admin=False):
-    db = get_db()
+def set_user_permissions(user, db, create=False, assign=False, change=False, remove=False, reset=False, view=False, pause=False, admin=False):
     create = boolean_to_yn(create)
     change = boolean_to_yn(change)
     remove = boolean_to_yn(remove)
@@ -183,9 +199,13 @@ def set_user_permissions(user, create=False, assign=False, change=False, remove=
     pause = boolean_to_yn(pause)
     admin = boolean_to_yn(admin)
     assign = boolean_to_yn(assign)
+    user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     try:
         db.execute("INSERT INTO user_permissions (user_id, create_user, assign_perms, change_perms, remove_user, reset_pwd, view_users, pause_user, admin) VALUES (?,?,?,?,?,?,?,?,?)",
-                   (get_user(user)[0], create, assign, change, remove, reset, view, pause, admin,))
+                       (user_id, create, assign, change, remove, reset, view, pause, admin,))
+
         db.commit()
     except Exception as e:
         print(e)
@@ -193,32 +213,40 @@ def set_user_permissions(user, create=False, assign=False, change=False, remove=
     return True
 
 
-def set_plugin_permissions(user, upload=False, remove=False, e_config=False, admin=False):
-    db = get_db()
+def set_plugin_permissions(user, db, upload=False, remove=False, e_config=False, admin=False):
     upload = boolean_to_yn(upload)
     e_config = boolean_to_yn(e_config)
     remove = boolean_to_yn(remove)
     admin = boolean_to_yn(admin)
+    user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     try:
-        db.execute("INSERT INTO user_permissions (user_id, upload, remove, edit_config_files, admin) VALUES (?,?,?,?,?)",
-                   (get_user(user)[0], upload, remove, e_config, admin,))
+        db.execute("INSERT INTO plugins_permissions (user_id, upload, remove, edit_config_files, admin) VALUES (?,?,?,?,?)",
+                       (user_id, upload, remove, e_config, admin,))
+
         db.commit()
+        # db.close()
     except Exception as e:
         print(e)
         return False
     return True
 
 
-def set_console_permissions(user, start=False, stop=False, admin=False, cmd=False):
-    db = get_db()
+def set_console_permissions(user, db, start=False, stop=False, admin=False, cmd=False):
     start = boolean_to_yn(start)
     stop = boolean_to_yn(stop)
     cmd = boolean_to_yn(cmd)
     admin = boolean_to_yn(admin)
+    user_id = get_user(user)[0]
+    if user_id is None:
+        return False
     try:
-        db.execute("INSERT INTO user_permissions (user_id, stop_perm, start_perm, execute_cmd, admin) VALUES (?,?,?,?,?)",
-                   (get_user(user)[0], stop, start, cmd, admin,))
+        db.execute("INSERT INTO console_permissions (user_id, stop_perm, start_perm, execute_cmd, admin) VALUES (?,?,?,?,?)",
+                       (user_id, stop, start, cmd, admin,))
+
         db.commit()
+        # db.close()
     except Exception as e:
         print(e)
         return False
@@ -237,3 +265,27 @@ def yn_to_boolean(obj):
         return True
     else:
         return False
+
+
+def getTableDump():
+    conn = get_db()
+    cu = conn.cursor()
+    users = 'Users\n------\n'
+    usersp = 'Users Perms\n------\n'
+    pluginp = 'Plugin Perms\n------\n'
+    consolep = 'Console Perms\n------\n'
+    print(users)
+    for row in cu.execute('SELECT * FROM user'):
+        print(row)
+    print(usersp)
+    for row in cu.execute('SELECT * FROM user_permissions'):
+        print(row)
+    print(pluginp)
+    for row in cu.execute('SELECT * FROM plugins_permissions'):
+        print(row)
+    print(consolep)
+    for row in cu.execute('SELECT * FROM console_permissions'):
+        print(row)
+
+    conn.commit()
+    return users + consolep + pluginp + usersp
