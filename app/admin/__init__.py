@@ -49,7 +49,7 @@ def Users():
     return page('users')
 
 
-@admin_bp.route('/user', methods=['GET','POST'])
+@admin_bp.route('/user', methods=['GET', 'POST'])
 def User():
     return page('user', user=session['username'])
 
@@ -78,6 +78,12 @@ def First_Login():
         return redirect(url_for('admin.Console'))
 
     return page('first_login')
+
+
+@admin_bp.route('/util/<string:command>', methods=['POST'])
+def util(command):
+    print(command)
+    return "False"
 
 
 @admin_bp.before_app_request
@@ -141,7 +147,11 @@ def console_page():
         username = 'debug'
     else:
         username = session['username']
-    return make_response(render_template('console.html', console_execute=m_console_execute, start=m_start, stop=m_stop, admin=m_admin, username=username))
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return make_response(render_template('console.html', console_execute=m_console_execute, start=m_start, stop=m_stop, admin=m_admin, username=username, key=key))
 
 
 def plugins_page():

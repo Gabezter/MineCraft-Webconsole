@@ -14,7 +14,7 @@ div.console form input[type=text] {
     width: 90%;
 }
 
-div.console form input[type=submit] {
+div.console form input[type=button] {
     width: 10%;
 }
 
@@ -43,8 +43,22 @@ header li a {
     text-decoration: none;
 }
 
-/* Change the link color to #111 (black) on hover */
-
 header li a:hover {
     background-color: #111;
+}
+
+div.buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+div.buttons {
+    height: 3%;
+    width: 100%;
+}
+
+div.buttons button {
+    width: 100%;
+    padding: unset;
+    text-align: center
 }

@@ -3,14 +3,95 @@
 <head>
     <title>Console Page</title>
     <link rel="stylesheet" type="text/css" href="/static/console.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type=text/javascript>
+        {% if console_execute or admin %}
+        function submit_command(){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/admin/util/send_command', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "key": {{ key }},
+                "command": document.forms['console_command']['command_input'].value,
+                "user": "{{ username }}"
+            }));
+            console.log(xhr.responseText)
+          document.forms['console_command']['command_input'].value = '';
+        }</script>
+    {% endif %}
+    {% if start or admin %}
+    <script type=text/javascript>
+        function start_command(){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/admin/util/start', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "key": {{ key }},
+                "start": true,
+                "user": "{{ username }}"
+            }));
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert(xhr.responseText)
+                }
+            };
+        }</script>
+    {% endif %}
+    {% if stop or admin %}
+    <script type=text/javascript>
+        function stop_command(){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/admin/util/stop', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "key": {{ key }},
+                "stop": true,
+                "user": "{{ username }}"
+            }));
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert(xhr.responseText)
+                }
+            };
+        }</script>
+    {% endif %}
+    {% if (start and stop) or admin %}
+    <script type=text/javascript>
+        function restart_command(){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/admin/util/restart', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "key": {{ key }},
+                "restart": true,
+                "user": "{{ username }}"
+            }));
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert(xhr.responseText)
+                }
+            };
+        }</script>
+    {% endif %}
+
 </head>
 <header>{% include "header.html" %}</header>
 
 <body>
     <div class='console'>
+        <div class='buttons'>
+            {% if start or admin %}<button value='START' onclick="start_command()">START</button>
+            {% endif %}
+            {% if stop or admin %}
+            <button type='button' value='STOP' onclick="stop_command()">STOP</button>
+            {% endif %}
+            {% if (start and stop) or admin %}
+            <button type='button' value='RESTART' onclick="restart_command()">RESTART</button>
+            {% endif %}</div>
         <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
-        {% if console_execute %}
-        <form><input type="text" hint="Command"><input type="submit" value="Enter"></form>
+        {% if console_execute or admin %}
+        <form name='console_command'><input type="text" id='command_input'><input type="button" value="Enter"
+                onclick="submit_command()"></form>
         {% endif %}
     </div>
 </body>
