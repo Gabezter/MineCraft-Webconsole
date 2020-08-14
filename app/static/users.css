@@ -1,0 +1,13 @@
+div #new_user {
+    position: relative;
+    z-index: 1;
+    background-color: white;
+    margin: 30px auto auto auto;
+    padding: 5px;
+    align-self: center;
+    align-content: center;
+    display: none;
+    width: 30%;
+    height: 65%;
+    box-shadow: rgba(0, 0, 0, 0.7) 0px 0px 1px 5000000px;
+}

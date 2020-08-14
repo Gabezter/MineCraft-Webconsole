@@ -8,7 +8,7 @@ from flask import current_app
 
 def generate_temp_password():
     length = random.randint(6, 8)
-    letters = string.ascii_letters
+    letters = string.ascii_letters + string.digits
     pwd = ''.join(random.choice(letters) for i in range(length))
     return pwd
 
@@ -64,3 +64,9 @@ def check_password_strength(password):
         symbol_error = True
 
     return length_error and digit_error and uppercase_error and lowercase_error and symbol_error
+
+def generate_key():
+    length = random.randint(32,60)
+    values = string.ascii_letters + string.digits
+    key = ''.join(random.choice(values) for i in range(length))
+    return key

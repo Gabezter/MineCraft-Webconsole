@@ -2,9 +2,18 @@
 
 <head>
     <title>Users Page</title>
-    <link rel="stylesheet" type="text/css" href="/static/console.css">
+    <link rel="stylesheet" type="text/css" href="/static/users.css">
+    
+    <script type="text/javascript">
+        function newUser() {
+            document.getElementById("new_user").style.display = "flex";
+        }
+    </script>
 </head>
 <header>{% include "header.html" %}</header>
+
+<body> <button onclick="newUser()">New User</button></body>
 <footer>{% include "footer.html" %}</footer>
+    <div id='new_user'><form></form></div>
 
 </html>

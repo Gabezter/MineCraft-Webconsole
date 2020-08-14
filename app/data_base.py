@@ -1,6 +1,7 @@
 import sqlite3
 from flask import current_app, g, session
-from app.util import hashify
+from app.utilities.util import hashify, generate_key, generate_temp_password
+import datetime as dt
 
 
 def get_db():
@@ -110,6 +111,10 @@ def update_password(user, password):
 
 def get_console_permissions():
     user = session['username']
+    return get_console_permissions_user(user)
+
+
+def get_console_permissions_user(user):
     db = get_db()
     user_id = get_user(user)[0]
     if user_id is None:
@@ -134,6 +139,10 @@ def get_console_permissions():
 
 def get_plugin_permissions():
     user = session['username']
+    return get_plugin_permissions_user(user)
+
+
+def get_plugin_permissions_user(user):
     db = get_db()
     c = db.cursor()
     user_id = get_user(user)[0]
@@ -159,6 +168,10 @@ def get_plugin_permissions():
 
 def get_user_permissions():
     user = session['username']
+    return get_user_permissions_user(user)
+
+
+def get_user_permissions_user(user):
     db = get_db()
     c = db.cursor()
     user_id = get_user(user)[0]
@@ -204,7 +217,7 @@ def set_user_permissions(user, db, create=False, assign=False, change=False, rem
         return False
     try:
         db.execute("INSERT INTO user_permissions (user_id, create_user, assign_perms, change_perms, remove_user, reset_pwd, view_users, pause_user, admin) VALUES (?,?,?,?,?,?,?,?,?)",
-                       (user_id, create, assign, change, remove, reset, view, pause, admin,))
+                   (user_id, create, assign, change, remove, reset, view, pause, admin,))
 
         db.commit()
     except Exception as e:
@@ -223,7 +236,7 @@ def set_plugin_permissions(user, db, upload=False, remove=False, e_config=False,
         return False
     try:
         db.execute("INSERT INTO plugins_permissions (user_id, upload, remove, edit_config_files, admin) VALUES (?,?,?,?,?)",
-                       (user_id, upload, remove, e_config, admin,))
+                   (user_id, upload, remove, e_config, admin,))
 
         db.commit()
         # db.close()
@@ -243,7 +256,7 @@ def set_console_permissions(user, db, start=False, stop=False, admin=False, cmd=
         return False
     try:
         db.execute("INSERT INTO console_permissions (user_id, stop_perm, start_perm, execute_cmd, admin) VALUES (?,?,?,?,?)",
-                       (user_id, stop, start, cmd, admin,))
+                   (user_id, stop, start, cmd, admin,))
 
         db.commit()
         # db.close()
@@ -289,3 +302,25 @@ def getTableDump():
 
     conn.commit()
     return users + consolep + pluginp + usersp
+
+def check_key(key, user):
+    user_id = get_user(user)[0]
+    db = get_db()
+    c = db.execute("SELECT expiration_date FROM valid_keys WHERE (user_key=? and id=?)", (key, user_id,)).fetchone()
+    if c is None:
+        return False
+    expire = dt.datetime.fromisoformat(c[0])
+    if dt.datetime.now(dt.timezone.utc) < expire:
+        return True
+    else:
+        return False
+
+def submit_key(user):
+    key = generate_key()
+    creation = dt.datetime.now(dt.timezone.utc)
+    expiration = creation + dt.timedelta(minutes=30)
+    db = get_db()
+    user_id = get_user(user)[0]
+    db.execute("INSERT INTO valid_keys (id, user_key, creation_date, expiration_date) VALUES (?,?,?,?)", (user_id, key, creation, expiration,))
+    db.commit()
+    return key

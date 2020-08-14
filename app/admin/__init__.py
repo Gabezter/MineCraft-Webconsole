@@ -1,7 +1,8 @@
 """Blueprint file for admin."""
 from flask import Blueprint, url_for, render_template, make_response, redirect, session, g, request, current_app
 import app.data_base as db
-from app.util import hashify, get_password_type, check_password_strength
+from app.utilities.util import hashify, get_password_type, check_password_strength
+import json
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -16,15 +17,18 @@ def Login():
             return page('e_login')
         elif valid == -1:
             session['username'] = username
+            session['permissions'] = {}
             return redirect(url_for('admin.First_Login'))
         elif valid == 2:
             return page('invalid_user')
         else:
             session['username'] = username
+            session['permissions'] = {}
             if db.get_console_permissions() and db.get_plugin_permissions and db.get_user_permissions:
                 return redirect(url_for('admin.Console'))
             else:
-                return redirect(url_for('admin.Logout'))
+                session.clear()
+                return page('e_login')
     return page('login')
 
 
@@ -62,7 +66,15 @@ def Logout():
 
 @admin_bp.route('/pwd-update', methods=['POST'])
 def Update():
-    return redirect(url_for('admin.User', username=session['username']))
+    if 'username' not in session:
+        username = 'debug'
+    else:
+        username = session['username']
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return redirect(url_for('admin.User', username=username))
 
 
 @admin_bp.route('/first-login', methods=['GET', 'POST'])
@@ -80,10 +92,47 @@ def First_Login():
     return page('first_login')
 
 
-@admin_bp.route('/util/<string:command>', methods=['POST'])
-def util(command):
-    print(command)
-    return "False"
+@admin_bp.route('/util/console/<string:command>', methods=['POST'])
+def util_console(command):
+    error = False
+    if(command == 'start' or command == 'stop' or command == 'restart' or command == 'command'):
+        if(request.json is not None):
+            data = request.get_json()
+            if "key" in data:
+                key = data['key']
+            else:
+                error = True
+            if "user" in data:
+                user = data['user']
+            else:
+                error = True
+            permission = db.get_console_permissions_user(user)
+            if db.check_key(key=key, user=user) == False:
+                return "logout"
+
+            if command == 'start' and (permission[2] or permission[0]) and error == False:
+                return "Staring Server"
+            if command == 'stop' and (permission[1] or permission[0]) and error == False:
+                return "Stopping Server"
+            if command == 'restart' and ((permission[2] and permission[1]) or permission[0]) and error == False:
+                return "Restarting Server"
+            if command == 'command' and (permission[3] or permission[0]) and error == False:
+                return "Executing Command"
+
+        else:
+            error = True
+        if not error:
+            return "Error has occured. Please refresh page and try again"
+        else:
+            if command == 'start':
+                return "Staring Server"
+            if command == 'stop':
+                return "Stopping Server"
+            if command == 'restart':
+                return "Restarting Server"
+            if command == 'command':
+                return "Executing Command"
+    return "UNKNOWN COMMAND"
 
 
 @admin_bp.before_app_request
@@ -166,7 +215,16 @@ def plugins_page():
         m_upload = True
         m_remove = True
         m_edit_configs = True
-    return make_response(render_template('plugins.html', admin=m_admin, upload=m_upload, remove=m_remove, edit=m_edit_configs, username=session['username']))
+    
+    if 'username' not in session:
+        username = 'debug'
+    else:
+        username = session['username']
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return make_response(render_template('plugins.html', admin=m_admin, upload=m_upload, remove=m_remove, edit=m_edit_configs, username=username, key=key))
 
 
 def configs_page():
@@ -178,7 +236,15 @@ def configs_page():
         m_admin = True
         m_edit_configs = True
 
-    return make_response(render_template('configs.html', admin=m_admin, edit=m_edit_configs, username=session['username']))
+    if 'username' not in session:
+        username = 'debug'
+    else:
+        username = session['username']
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return make_response(render_template('configs.html', admin=m_admin, edit=m_edit_configs, username=username))
 
 
 def users_page():
@@ -201,12 +267,28 @@ def users_page():
         m_reset = True
         m_view = True
         m_pause = True
-    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=session['username']))
+    if 'username' not in session:
+        username = 'debug'
+    else:
+        username = session['username']
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=username))
 
 
 def user_page(p_username):
     url_for("static", filename='user.css')
-    return make_response(render_template('user.html', username=session['username']))
+    if 'username' not in session:
+        username = 'debug'
+    else:
+        username = session['username']
+    if 'key' not in session:
+        key = '33284'
+    else:
+        key = session['key']
+    return make_response(render_template('user.html', username=username))
 
 
 def login_page(p_error=False, p_logout=False, p_invalid=False):
@@ -221,3 +303,4 @@ def first_login_page(p_not_match=False, p_error=False):
     m_tight = password_type[1]
     m_loose = password_type[0]
     return make_response(render_template('first_login.html', error=p_error, not_match=p_error, strict=m_strict, tight=m_tight, loose=m_loose))
+
