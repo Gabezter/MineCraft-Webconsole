@@ -2,8 +2,9 @@ import random
 import string
 import hashlib
 import re
+import logging
 
-from flask import current_app
+from flask import current_app, has_request_context, request
 
 
 def generate_temp_password():
@@ -65,8 +66,21 @@ def check_password_strength(password):
 
     return length_error and digit_error and uppercase_error and lowercase_error and symbol_error
 
+
 def generate_key():
-    length = random.randint(32,60)
+    length = random.randint(32, 60)
     values = string.ascii_letters + string.digits
     key = ''.join(random.choice(values) for i in range(length))
     return key
+
+
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        if has_request_context():
+            record.url = request.url
+            record.remote_addr = request.remote_addr
+        else:
+            record.url = None
+            record.remote_addr = None
+
+        return super().format(record)
