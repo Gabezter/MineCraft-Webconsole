@@ -2,6 +2,7 @@
 from flask import Blueprint, url_for, render_template, make_response, redirect, session, request, current_app
 import app.data_base as db
 from app.utilities.util import hashify, get_password_type, check_password_strength
+from app.utilities.util import Loggers as log
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -13,18 +14,25 @@ def Login():
         password = request.form['password']
         valid = db.check_user(username, hashify(password))
         if valid == 1 or valid == 3:
+            log.Main.error(username + " had a failed login attempt.")
             return page('e_login')
         elif valid == -1:
             session['username'] = username
+            log.Main.info(username + " logged in for the first time.")
             return redirect(url_for('admin.First_Login'))
         elif valid == 2:
+            log.Main.error(
+                username + " tried to login, but account was paused at the time.")
             return page('invalid_user')
         else:
             session['username'] = username
             if db.get_console_permissions() and db.get_plugin_permissions() and db.get_user_permissions():
+                log.Main.info(username + " successfully logged in.")
                 return redirect(url_for('admin.Console'))
             else:
                 session.clear()
+                log.Main.error(
+                    username + " tried to log in but an error occured with the permissions")
                 return page('e_login')
     return page('login')
 
@@ -61,6 +69,7 @@ def User():
 
 @admin_bp.route('/logout')
 def Logout():
+    log.Main.info(session['username'] + " has succesfully logged out.")
     session.clear()
     return redirect(url_for('admin.Login'))
 
@@ -89,6 +98,7 @@ def First_Login():
             return page('e_first_login')
         db.update_password(session['username'], pwd1)
         if db.get_console_permissions() and db.get_plugin_permissions() and db.get_user_permissions():
+            session['key'] = db.submit_key(session['username'])
             return redirect(url_for('admin.Console'))
         else:
             session.clear()
@@ -116,18 +126,57 @@ def util_console(command):
                 return "logout"
 
             if command == 'start' and (permission[2] or permission[0]) and error == False:
+                log.Main.info(user + ' just started the server!')
                 return "Staring Server"
+            else:
+                if error:
+                    log.Main.error(
+                        user + ' just attempted to start the server. The start was blocked because there was an error. They were instructed to try again.')
+                elif not (permission[2] or permission[0]):
+                    log.Main.error(
+                        user + ' just attempted to start the server. The start was blocked because they do not have permission.')
             if command == 'stop' and (permission[1] or permission[0]) and error == False:
+                log.Main.info(user + ' just stopped the server!')
                 return "Stopping Server"
+            else:
+                if error:
+                    log.Main.error(
+                        user + ' just attempted to stop the server. The stop was blocked because there was an error. They were instructed to try again.')
+                elif not (permission[1] or permission[0]):
+                    log.Main.error(
+                        user + ' just attempted to stop the server. The stop was blocked because they do not have permission.')
             if command == 'restart' and ((permission[2] and permission[1]) or permission[0]) and error == False:
+                log.Main.info(user + ' just restarted the server!')
                 return "Restarting Server"
+            else:
+                if error:
+                    log.Main.error(
+                        user + ' just attempted to restart the server. The restart was blocked because there was an error. They were instructed to try again.')
+                elif not ((permission[2] and permission[1]) or permission[0]):
+                    log.Main.error(
+                        user + ' just attempted to restart the server. The restart was blocked because they do not have permission.')
             if command == 'command' and (permission[3] or permission[0]) and error == False:
+                log.Main.info(
+                    user + ' just executed the following command: \n\t\t [\t' + data['command'] + '\t]')
                 return "Executing Command"
+            else:
+                if error:
+                    log.Main.error(
+                        user +
+                        ' just attempted to execute the folling command: \n\t\t [\t' +
+                        data['command']
+                        + '\t]\n The command was blocked because there was an error. They were instructed to try again.')
+                elif not (permission[3] or permission[0]):
+                    log.Main.error(
+                        user +
+                        ' just attempted to execute the folling command: \n\t\t [\t' +
+                        data['command']
+                        + '\t]\n The command was blocked because they do not have permission.')
 
         else:
             error = True
         if not error:
-            return "Error has occured. Please refresh page and try again"
+            return "Error has occured. Please logout and try again"
         else:
             if command == 'start':
                 return "Staring Server"
@@ -215,7 +264,7 @@ def console_page():
 
 def plugins_page():
     url_for("static", filename='plugins.css')
-    if (current_app.config['DEBUG'] != True ):
+    if (current_app.config['DEBUG'] != True):
         m_admin = session['plugins']['admin']
         m_upload = session['plugins']['upload']
         m_remove = session['plugins']['remove']
@@ -239,7 +288,7 @@ def plugins_page():
 
 def configs_page():
     url_for("static", filename='configs.css')
-    if (current_app.config['DEBUG'] != True ):
+    if (current_app.config['DEBUG'] != True):
         m_admin = session['plugins']['admin']
         m_edit_configs = session['plugins']['edit_configs']
     else:
@@ -259,7 +308,7 @@ def configs_page():
 
 def users_page():
     url_for("static", filename='users.css')
-    if (current_app.config['DEBUG'] != True ):
+    if (current_app.config['DEBUG'] != True):
         m_admin = session['user']['admin']
         m_create = session['user']['create']
         m_assign = session['user']['assign']

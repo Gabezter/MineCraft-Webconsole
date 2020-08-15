@@ -7,6 +7,13 @@ import logging
 from flask import current_app, has_request_context, request
 
 
+class Loggers:
+    Main = logging.getLogger('main')
+    Debug = logging.getLogger('debug')
+    Request = logging.getLogger('request')
+    Error = logging.getLogger('error')
+
+
 def generate_temp_password():
     length = random.randint(6, 8)
     letters = string.ascii_letters + string.digits
@@ -72,15 +79,3 @@ def generate_key():
     values = string.ascii_letters + string.digits
     key = ''.join(random.choice(values) for i in range(length))
     return key
-
-
-class RequestFormatter(logging.Formatter):
-    def format(self, record):
-        if has_request_context():
-            record.url = request.url
-            record.remote_addr = request.remote_addr
-        else:
-            record.url = None
-            record.remote_addr = None
-
-        return super().format(record)

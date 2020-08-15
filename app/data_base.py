@@ -1,7 +1,8 @@
 import sqlite3
-from flask import current_app, g, session
+from flask import current_app, g, session, request
 from app.utilities.util import hashify, generate_key, generate_temp_password
 import datetime as dt
+from app.utilities.util import Loggers as log
 
 
 def get_db():
@@ -85,9 +86,12 @@ def create_user(user, password, console_perms, plugin_perms, user_perms):
         set_user_permissions(user=user, db=db, create=user_perms['create'], assign=user_perms['assign'], change=user_perms['change'],
                              remove=user_perms['remove'], reset=user_perms['reset'], view=user_perms['view'], pause=user_perms['pause'], admin=user_perms['admin'])
         db.commit()
-        # db.close()
+        if 'username' in session:
+            log.Main.info(user + ' created by:' + session['username'])
+        else:
+            log.Main.info(user + ' was created')
     except Exception as e:
-        print(e)
+        log.Debug.debug(e)
         return False
     return True
 
@@ -102,8 +106,10 @@ def update_password(user, password):
                    (password, 'N', user_id))
         db.commit()
         db.close()
+        log.Main.info("Password has changed for user: " + user +
+                      " from ip address: " + '[ ' + request.remote_addr + ' ]')
     except Exception as e:
-        print(e)
+        log.Debug.debug(e)
         return False
     return True
 
@@ -215,7 +221,7 @@ def set_user_permissions(user, db, create=False, assign=False, change=False, rem
 
         db.commit()
     except Exception as e:
-        print(e)
+        log.Debug.debug(e)
         return False
     return True
 
@@ -235,7 +241,7 @@ def set_plugin_permissions(user, db, upload=False, remove=False, e_config=False,
         db.commit()
         # db.close()
     except Exception as e:
-        print(e)
+        log.Debug.debug(e)
         return False
     return True
 
@@ -255,7 +261,7 @@ def set_console_permissions(user, db, start=False, stop=False, admin=False, cmd=
         db.commit()
         # db.close()
     except Exception as e:
-        print(e)
+        log.Debug.debug(e)
         return False
     return True
 
@@ -281,6 +287,7 @@ def getTableDump():
     usersp = 'Users Perms\n------\n'
     pluginp = 'Plugin Perms\n------\n'
     consolep = 'Console Perms\n------\n'
+    keys = 'Keys\n------\n'
     print(users)
     for row in cu.execute('SELECT * FROM user'):
         print(row)
@@ -292,6 +299,9 @@ def getTableDump():
         print(row)
     print(consolep)
     for row in cu.execute('SELECT * FROM console_permissions'):
+        print(row)
+    print(keys)
+    for row in cu.execute('SELECT * FROM valid_keys'):
         print(row)
 
     conn.commit()

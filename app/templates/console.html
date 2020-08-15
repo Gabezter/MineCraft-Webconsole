@@ -4,27 +4,34 @@
     <title>Console Page</title>
     <link rel="stylesheet" type="text/css" href="/static/console.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    {% if console_execute or admin %}
     <script type=text/javascript>
-        {% if console_execute or admin %}
         function submit_command(){
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/admin/util/console/command', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "key": {{ key }},
-                "command": document.forms['console_command']['command_input'].value,
+                "key": "{{ key }}",
+                "command": document.getElementById("command_input").value,
                 "user": "{{ username }}"
             }));
             xhr.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     if(xhr.responseText == 'logout'){
-                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                         alert("Please log-in again. Key invalid")
+                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                     }
                 }
             };
-          document.forms['console_command']['command_input'].value = '';
-        }</script>
+
+        };
+        document.getElementById("command_input").addEventListener('keyup', function (event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById('submit_btn').click();
+            }
+        })
+        </script>
     {% endif %}
     {% if start or admin %}
     <script type=text/javascript>
@@ -33,15 +40,15 @@
             xhr.open("POST", '/admin/util/console/start', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "key": {{ key }},
+                "key": "{{ key }}",
                 "start": true,
                 "user": "{{ username }}"
             }));
             xhr.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     if(xhr.responseText == 'logout'){
-                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                         alert("Please log-in again. Key invalid")
+                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                     }
                 }
             };
@@ -54,15 +61,15 @@
             xhr.open("POST", '/admin/util/console/stop', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "key": {{ key }},
+                "key": "{{ key }}",
                 "stop": true,
                 "user": "{{ username }}"
             }));
             xhr.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     if(xhr.responseText == 'logout'){
-                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                         alert("Please log-in again. Key invalid")
+                        window.location.replace($SCRIPT_ROOT+'/admin/logout')
                     }
                 }
             };
@@ -75,7 +82,7 @@
             xhr.open("POST", '/admin/util/console/restart', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "key": {{ key }},
+                "key": "{{ key }}",
                 "restart": true,
                 "user": "{{ username }}"
             }));
@@ -106,9 +113,9 @@
             {% endif %}</div>
         <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
         {% if console_execute or admin %}
-        <form name='console_command'><input type="text" id='command_input'><input type="button" value="Enter"
-                onclick="submit_command()">
-        </form>
+        <div name='console_command'><input type="text" id='command_input'><input type="button" value="Enter"
+                id='submit_btn' onclick="submit_command()">
+        </div>
         {% endif %}
     </div>
 </body>

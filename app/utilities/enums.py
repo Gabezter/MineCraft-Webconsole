@@ -15,8 +15,3 @@ class Pages(Enum):
     Error_First_Login = auto()
     Error_No_Match_First_Login = auto()
     Invalid_User = auto()
-
-@unique
-class Loggers(Enum):
-    Main = auto()
-    Debug = auto()
