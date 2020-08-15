@@ -1,8 +1,7 @@
 """Blueprint file for admin."""
-from flask import Blueprint, url_for, render_template, make_response, redirect, session, g, request, current_app
+from flask import Blueprint, url_for, render_template, make_response, redirect, session, request, current_app
 import app.data_base as db
 from app.utilities.util import hashify, get_password_type, check_password_strength
-import json
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 

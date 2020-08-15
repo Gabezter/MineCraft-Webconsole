@@ -12,7 +12,7 @@ def app():
 
     @app.route('/init')
     def init():
-        db.init() 
+        db.init()
         return redirect(url_for('admin.Login'))
 
     @app.route('/dump')

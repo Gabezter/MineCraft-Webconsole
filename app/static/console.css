@@ -50,15 +50,13 @@ header li a:hover {
 div.buttons {
     display: flex;
     flex-direction: row;
-}
-
-div.buttons {
     height: 3%;
     width: 100%;
 }
 
+
 div.buttons button {
     width: 100%;
     padding: unset;
-    text-align: center
+    text-align: center;
 }

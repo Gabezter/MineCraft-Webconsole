@@ -30,8 +30,7 @@ body div form {
     border: groove;
 }
 
-label, 
-input {
+label, input {
     display: inline-block;
 }
 

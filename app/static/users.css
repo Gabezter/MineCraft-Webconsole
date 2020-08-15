@@ -9,7 +9,7 @@ div #new_user {
     display: none;
     width: 30%;
     height: 65%;
-    box-shadow: rgba(0, 0, 0, 0.7) 0px 0px 1px 5000000px;
+    box-shadow: rgba(0, 0, 0, 0.7) 0 0 1px 5000000px;
 }
 
 #users {
@@ -33,5 +33,5 @@ div #new_user {
     border: solid black 2px;
     border-collapse: collapse;
     padding: 5px;
-    text-align:center;
+    text-align: center;
 }
