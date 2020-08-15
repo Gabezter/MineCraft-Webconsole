@@ -18,16 +18,16 @@ def hashify(pwd):
 
 
 def get_password_type():
-    type = str(current_app.config['PASSWORD_STRENGTH']).lower
-    if type == 'loose':
+    pwd_type = str(current_app.config['PASSWORD_STRENGTH']).lower
+    if pwd_type == 'loose':
         loose = True
         strict = False
         tight = False
-    elif type == 'tight':
+    elif pwd_type == 'tight':
         loose = False
         strict = False
         tight = True
-    elif type == 'strict':
+    elif pwd_type == 'strict':
         loose = False
         strict = True
         tight = False
