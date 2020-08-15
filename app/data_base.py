@@ -24,7 +24,6 @@ def init():
         current_app.config['DATABASE'],
         detect_types=sqlite3.PARSE_DECLTYPES
     )
-    g.db = db
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
     pwd = hashify('ChangeMe1!')
@@ -121,19 +120,16 @@ def get_console_permissions_user(user):
         return False
     perms = db.execute(
         'SELECT * FROM console_permissions WHERE user_id=?', (user_id,)).fetchone()
-    print(user_id, perms)
     stop = yn_to_boolean(perms[1])
     start = yn_to_boolean(perms[2])
     cmd = yn_to_boolean(perms[3])
     admin = yn_to_boolean(perms[4])
-
-    session['permissions']['console'] = {
+    session['console'] = {
         'admin': admin,
         'stop': stop,
         'start': start,
         'cmd': cmd
     }
-
     return ((admin, stop, start, cmd))
 
 
@@ -149,14 +145,13 @@ def get_plugin_permissions_user(user):
     if user_id is None:
         return False
     perms = c.execute(
-        'SELECT * FROM plugins_permissions WHERE user_id=?', (user_id,))
+        'SELECT * FROM plugins_permissions WHERE user_id=?', (user_id,)).fetchone()
 
     upload = yn_to_boolean(perms[1])
     remove = yn_to_boolean(perms[2])
     e_config = yn_to_boolean(perms[3])
     admin = yn_to_boolean(perms[4])
-
-    session['permissions']['plugin'] = {
+    session['plugin'] = {
         'admin': admin,
         'upload': upload,
         'remove': remove,
@@ -178,7 +173,7 @@ def get_user_permissions_user(user):
     if user_id is None:
         return False
     perms = c.execute(
-        'SELECT * FROM user_permissions WHERE user_id=?', (user_id,))
+        'SELECT * FROM user_permissions WHERE user_id=?', (user_id,)).fetchone()
 
     create = yn_to_boolean(perms[1])
     assign = yn_to_boolean(perms[2])
@@ -188,8 +183,7 @@ def get_user_permissions_user(user):
     view = yn_to_boolean(perms[6])
     pause = yn_to_boolean(perms[7])
     admin = yn_to_boolean(perms[8])
-
-    session['permissions']['user'] = {
+    session['user'] = {
         'admin': admin,
         'create': create,
         'assign': assign,
@@ -303,10 +297,12 @@ def getTableDump():
     conn.commit()
     return users + consolep + pluginp + usersp
 
+
 def check_key(key, user):
     user_id = get_user(user)[0]
     db = get_db()
-    c = db.execute("SELECT expiration_date FROM valid_keys WHERE (user_key=? and id=?)", (key, user_id,)).fetchone()
+    c = db.execute(
+        "SELECT expiration_date FROM valid_keys WHERE (user_key=? and id=?)", (key, user_id,)).fetchone()
     if c is None:
         return False
     expire = dt.datetime.fromisoformat(c[0])
@@ -315,12 +311,23 @@ def check_key(key, user):
     else:
         return False
 
+
 def submit_key(user):
     key = generate_key()
     creation = dt.datetime.now(dt.timezone.utc)
     expiration = creation + dt.timedelta(minutes=30)
     db = get_db()
     user_id = get_user(user)[0]
-    db.execute("INSERT INTO valid_keys (id, user_key, creation_date, expiration_date) VALUES (?,?,?,?)", (user_id, key, creation, expiration,))
+    db.execute("INSERT INTO valid_keys (id, user_key, creation_date, expiration_date) VALUES (?,?,?,?)",
+               (user_id, key, creation, expiration,))
     db.commit()
     return key
+
+
+def list_users():
+    db = get_db()
+    users_sql = db.execute('SELECT username,valid FROM user ')
+    users = []
+    for user in users_sql:
+        users.append((user[0], not yn_to_boolean(user[1])))
+    return users

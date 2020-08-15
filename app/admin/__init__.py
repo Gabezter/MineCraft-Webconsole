@@ -17,14 +17,12 @@ def Login():
             return page('e_login')
         elif valid == -1:
             session['username'] = username
-            session['permissions'] = {}
             return redirect(url_for('admin.First_Login'))
         elif valid == 2:
             return page('invalid_user')
         else:
             session['username'] = username
-            session['permissions'] = {}
-            if db.get_console_permissions() and db.get_plugin_permissions and db.get_user_permissions:
+            if db.get_console_permissions() and db.get_plugin_permissions() and db.get_user_permissions():
                 return redirect(url_for('admin.Console'))
             else:
                 session.clear()
@@ -35,6 +33,10 @@ def Login():
 @admin_bp.route('/console')
 @admin_bp.route('/')
 def Console():
+    if '/admin/login' in request.referrer:
+        db.get_console_permissions()
+        db.get_plugin_permissions()
+        db.get_user_permissions()
     return page('console')
 
 
@@ -87,7 +89,11 @@ def First_Login():
         if (check_password_strength(request.form['password1']) == False):
             return page('e_first_login')
         db.update_password(session['username'], pwd1)
-        return redirect(url_for('admin.Console'))
+        if db.get_console_permissions() and db.get_plugin_permissions() and db.get_user_permissions():
+            return redirect(url_for('admin.Console'))
+        else:
+            session.clear()
+            return page('e_login')
 
     return page('first_login')
 
@@ -137,7 +143,7 @@ def util_console(command):
 
 @admin_bp.before_app_request
 def load_logged_in_user():
-    if(request.path != '/admin/login'):
+    if(request.path != '/admin/login' and request.path != '/init' and request.path != '/dump'):
         if (current_app.config['DEBUG'] is not True):
             user = session.get('username')
             if user is None:
@@ -180,13 +186,18 @@ def page(page, **kargs):
         return login_page(p_error=True, p_logout=False, p_invalid=True)
 
 
+@admin_bp.errorhandler(500)
+def internal_error(e):
+    return render_template('internal_error.html'), 500
+
+
 def console_page():
     url_for("static", filename='console.css')
-    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
-        m_start = session['permissions']['console']['stop']
-        m_stop = session['permissions']['console']['start']
-        m_console_execute = session['permissions']['console']['cmd']
-        m_admin = session['permissions']['console']['admin']
+    if (current_app.config['DEBUG'] != True):
+        m_start = session['console']['stop']
+        m_stop = session['console']['start']
+        m_console_execute = session['console']['cmd']
+        m_admin = session['console']['admin']
     else:
         m_start = True
         m_stop = True
@@ -205,17 +216,17 @@ def console_page():
 
 def plugins_page():
     url_for("static", filename='plugins.css')
-    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
-        m_admin = session['permissions']['plugins']['admin']
-        m_upload = session['permissions']['plugins']['upload']
-        m_remove = session['permissions']['plugins']['remove']
-        m_edit_configs = session['permissions']['plugins']['edit_configs']
+    if (current_app.config['DEBUG'] != True ):
+        m_admin = session['plugins']['admin']
+        m_upload = session['plugins']['upload']
+        m_remove = session['plugins']['remove']
+        m_edit_configs = session['plugins']['edit_configs']
     else:
         m_admin = True
         m_upload = True
         m_remove = True
         m_edit_configs = True
-    
+
     if 'username' not in session:
         username = 'debug'
     else:
@@ -229,9 +240,9 @@ def plugins_page():
 
 def configs_page():
     url_for("static", filename='configs.css')
-    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
-        m_admin = session['permissions']['plugins']['admin']
-        m_edit_configs = session['permissions']['plugins']['edit_configs']
+    if (current_app.config['DEBUG'] != True ):
+        m_admin = session['plugins']['admin']
+        m_edit_configs = session['plugins']['edit_configs']
     else:
         m_admin = True
         m_edit_configs = True
@@ -249,15 +260,15 @@ def configs_page():
 
 def users_page():
     url_for("static", filename='users.css')
-    if (current_app.config['DEBUG'] != True and session['permissions'] is not None):
-        m_admin = session['permissions']['user']['admin']
-        m_create = session['permissions']['user']['create']
-        m_assign = session['permissions']['user']['assign']
-        m_change = session['permissions']['user']['change']
-        m_remove = session['permissions']['user']['remove']
-        m_reset = session['permissions']['user']['reset']
-        m_view = session['permissions']['user']['view']
-        m_pause = session['permissions']['user']['pause']
+    if (current_app.config['DEBUG'] != True ):
+        m_admin = session['user']['admin']
+        m_create = session['user']['create']
+        m_assign = session['user']['assign']
+        m_change = session['user']['change']
+        m_remove = session['user']['remove']
+        m_reset = session['user']['reset']
+        m_view = session['user']['view']
+        m_pause = session['user']['pause']
     else:
         m_admin = True
         m_create = True
@@ -275,7 +286,7 @@ def users_page():
         key = '33284'
     else:
         key = session['key']
-    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=username))
+    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=username, users=db.list_users()))
 
 
 def user_page(p_username):
@@ -303,4 +314,3 @@ def first_login_page(p_not_match=False, p_error=False):
     m_tight = password_type[1]
     m_loose = password_type[0]
     return make_response(render_template('first_login.html', error=p_error, not_match=p_error, strict=m_strict, tight=m_tight, loose=m_loose))
-
