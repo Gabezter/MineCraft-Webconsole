@@ -37,8 +37,8 @@ def app():
         return render_template('not_found.html'), 404
 
     def internal_error(e):
-        log.Error.error(e.get_response())
         print(e)
+        log.Error.error(e.get_response())
         return render_template('internal_error.html'), 500
 
     app.register_error_handler(404, not_found)

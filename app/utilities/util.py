@@ -4,7 +4,7 @@ import hashlib
 import re
 import logging
 
-from flask import current_app, has_request_context, request
+from flask import current_app, request
 
 
 class Loggers:

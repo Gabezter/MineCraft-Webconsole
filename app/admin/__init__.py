@@ -3,6 +3,8 @@ from flask import Blueprint, url_for, render_template, make_response, redirect, 
 import app.data_base as db
 from app.utilities.util import hashify, get_password_type, check_password_strength
 from app.utilities.util import Loggers as log
+import app.utilities.plugins as plugins
+import asyncio
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -264,6 +266,7 @@ def console_page():
 
 def plugins_page():
     url_for("static", filename='plugins.css')
+    plugin_files = asyncio.run(plugins.get_plugins())
     if (current_app.config['DEBUG'] != True):
         m_admin = session['plugins']['admin']
         m_upload = session['plugins']['upload']
@@ -283,7 +286,7 @@ def plugins_page():
         key = '33284'
     else:
         key = session['key']
-    return make_response(render_template('plugins.html', admin=m_admin, upload=m_upload, remove=m_remove, edit=m_edit_configs, username=username, key=key))
+    return make_response(render_template('plugins.html', admin=m_admin, upload=m_upload, remove=m_remove, edit=m_edit_configs, username=username, key=key, plugins=plugin_files))
 
 
 def configs_page():

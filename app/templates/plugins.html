@@ -2,8 +2,22 @@
 
 <head>
     <title>Plugins Page</title>
+    <link rel="stylesheet" type="text/css" href="/static/plugins.css">
 </head>
 <header>{% include "header.html" %}</header>
+
+<body>
+    <table>
+        <tr>
+            <th>Plugin Name</th>
+        </tr>
+        {% for name,file in plugins %}
+        <tr>
+            <td>{{ name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
 <footer>{% include "footer.html" %}</footer>
 
 </html>
