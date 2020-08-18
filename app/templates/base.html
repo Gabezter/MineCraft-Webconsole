@@ -1,0 +1,32 @@
+<html>
+
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+    <link rel="stylesheet" type="text/css" href="/static/base.css">
+</head>
+<header><!-- <a href='console'><img src="static/logo.png" alt='This is the logo'></a> -->
+
+    <nav>
+        <ul>
+            <li><a href='console'>Console</a></li>
+            <li><a href='plugins'>Plugins</a></li>
+            <li><a href='users'>Users</a></li>
+            <li><a href='user'>{{ username }}</a></li>
+            <li><a href='logout'>Logout</a></li>
+        </ul>
+    </nav>
+    <script type=text/javascript>
+      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+</header><body>{% block content %} {% endblock %}</body>
+<div id='footer'>
+    <br>
+    This console was created to be used on self hosted machines.<br>
+    If any issues arise please create an <a href="https://github.com/Gabezter/MineCraft-Webconsole/issues/new">issue</a>
+    on the github.<br>
+    Created by Gabezter and posted on <a href='https://github.com/Gabezter/MineCraft-Webconsole'>Github</a> <br>
+    <a href='https://github.com/Gabezter/MineCraft-Webconsole/blob/master/LICENSE'>License: Apache License 2.0</a>
+    <br><br></div>
+</html>

@@ -4,6 +4,7 @@ from os.path import isfile, join
 import yaml
 import asyncio
 from flask import current_app
+from .util import Loggers
 
 
 async def get_plugins():
@@ -19,11 +20,13 @@ async def get_plugins():
             if 'plugin.yml' in f.namelist():
                 plugin_file = f.open('plugin.yml', 'r')
                 plugin_yaml = yaml.load(plugin_file, Loader=yaml.FullLoader)
-                print(plugin_yaml)
                 plugin_name = plugin_yaml['name']
-                plugins.append((plugin_name, jar_file))
+                plugin_version = plugin_yaml['version']
+                plugins.append((plugin_name, plugin_version, jar_file))
         except Exception as e:
-            print(e)
+            Loggers.Error.error("Error in:"+ jar_file)
+            Loggers.Error.error(e)
+            pass
         plugins.sort()
 
     return plugins

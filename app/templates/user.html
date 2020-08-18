@@ -1,11 +1,10 @@
-<html>
-
-<head>
-    <title>{{ username }}</title>
-</head>
-<header>{% include "header.html" %}</header>
-
-<body>
+{% extends 'base.html' %}
+{% block title %}{{ username }}{% endblock %}
+{% block head%}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="/static/users.css">
+{% endblock %}
+{% block content %}
     <div>
         <form method='post'>
             <div id='label'>Change Password</div>
@@ -33,7 +32,4 @@
     {% if error %} <div id='error'> {% if not_match %} Passwords do not match {% else %} Password does not fall under
         requirements{% endif %}</div> {% endif %}
     {% if success %}<div id='updated'>Password succesfully updated</div>{% endif %}
-</body>
-<footer>{% include "footer.html" %}</footer>
-
-</html>
+{% endblock %}

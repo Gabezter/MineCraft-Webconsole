@@ -1,10 +1,11 @@
-<html>
+{% extends 'base.html' %}
+{% block title %}Plugins{% endblock %}
+{% block head%}
+{{ super() }}
+<title>Configuration File Page</title>
+<link rel="stylesheet" type="text/css" href="/static/console.css">
+{% endblock %}
+{% block content %}
+Hello
 
-<head>
-    <title>Configuration File Page</title>
-    <link rel="stylesheet" type="text/css" href="/static/console.css">
-</head>
-<header>{% include "header.html" %}</header>
-<footer>{% include "footer.html" %}</footer>
-
-</html>
+{% endblock %}

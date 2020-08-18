@@ -1,35 +1,33 @@
-<html>
+{% extends 'footer_base.html' %}
+{% block title %}MC Console Login{% endblock %}
+{% block head%}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="/static/first_login.css">{% endblock %}
+{% block content %}
+<div>
+    <form method='post'>
+        <!-- <a href='console'><img src="static/logo.png" alt='This is the logo'></a> -->
+        <div id='label'>Change Password</div>
+        <br>
+        <label for='pwd1'>Password</label> <input type='password' name='password1' id='pwd1' required>
+        <br>
+        <br>
+        <label for='pwd2'>Confirm Password</label> <input type='password' name='password2' id='pwd2' required>
+        <br>
+        {% if strict %}
+        <div id='info'>Password must be at least 8 characters. Must contain at least 1 uppercase, 1 lowercase, 1 number,
+            and 1 special character </div>
+        {% elif tight %}
+        <div id='info'>Password must be at least 8 characters. Must contain at least 1 uppercase, 1 lowercase, and 1
+            number </div>
+        {% elif loose %}
+        <div id='info'>Password must be at least 6 characters. Must contain at least 1 uppercase, and 1 lowercase </div>
+        {% endif %}
+        <br>
 
-<head>
-    <title>MC Console Login</title>
-    <link rel="stylesheet" type="text/css" href="/static/first_login.css">
-</head>
-
-<body>
-    <div>
-        <form method='post'>
-            <div id='label'>Change Password</div>
-            <br>
-            <label for='pwd1'>Password</label> <input type='password' name='password1' id='pwd1' required>
-            <br>
-            <br>
-            <label for='pwd2'>Confirm Password</label> <input type='password' name='password2' id='pwd2' required>
-            <br>
-            {% if strict %}
-            <div id='info'>Password must be at least 8 characters. Must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character </div>
-            {% elif tight %}
-            <div id='info'>Password must be at least 8 characters. Must contain at least 1 uppercase, 1 lowercase, and 1 number </div>
-            {% elif loose %}
-            <div id='info'>Password must be at least 6 characters. Must contain at least 1 uppercase, and 1 lowercase </div>
-            {% endif %}
-            <br>
-            
-            <input type="submit" value='Update'>
-        </form>
-    </div><br><br>
-    {% if error %} <div id='error'> {% if not_match %} Passwords do not match {% else %} Password does not fall under
-        requirements{% endif %}</div> {% endif %}
-</body>
-<footer>{% include "footer.html" %}</footer>
-
-</html>
+        <input type="submit" value='Update'>
+    </form>
+</div><br><br>
+{% if error %} <div id='error'> {% if not_match %} Passwords do not match {% else %} Password does not fall under
+    requirements{% endif %}</div> {% endif %}
+{% endblock %}

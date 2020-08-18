@@ -1,45 +1,43 @@
-<html>
+{% extends 'base.html' %}
+{% block title %}Users Page{% endblock %}
+{% block head%}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="/static/users.css">
 
-<head>
-    <title>Users Page</title>
-    <link rel="stylesheet" type="text/css" href="/static/users.css">
-
-    <script type="text/javascript">
-        function newUser() {
-            document.getElementById("new_user").style.display = "flex";
-        }
-    </script>
-</head>
-<header>{% include "header.html" %}</header>
-
-<body>
-    {% if admin or view %}
-    <div id='users'><button onclick="newUser()">New User</button>
-        <table>
-            <tr>
-                <th>Username</th>
-                {% if admin or change %}<th>Change Permissions</th>{% endif %}
-                {% if admin or reset %}<th>Reset Password</th>{% endif %}
-                {% if admin or pause %}<th>Pause User</th>{% endif %}
-                {% if admin or remove %}<th>Delete User</th>{% endif %}
-            </tr>
-            {% for user,valid in users %}
-            <tr>
-                <td>{{ user }}</td>
-                {% if admin or change %}<td><button>Permissions</button></td>{% endif %}
-                {% if admin or reset %}<td><button>Password</button></td>{% endif %}
-                {% if pause or admin%} <td>{% if valid %}<button>Pause</button> {% else %} <button>Unpause</button>{% endif %}</td>{% endif %}
-                {% if admin or remove %} <td><button>Delete</button></td>{% endif %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    {% else %}<p>You do not have permission to view the content of this page.</p> {% endif %}
-
-</body>
-<footer>{% include "footer.html" %}</footer>
+<script type="text/javascript">
+    function newUser() {
+        document.getElementById("new_user").style.display = "flex";
+    }
+</script>{% endblock %}
+{% block content %}
+{% if admin or view %}
+{% if error == False %}
+<div id='users'><button onclick="newUser()">New User</button>
+    <table>
+        <tr>
+            <th>Username</th>
+            {% if admin or change %}<th>Change Permissions</th>{% endif %}
+            {% if admin or reset %}<th>Reset Password</th>{% endif %}
+            {% if admin or pause %}<th>Pause User</th>{% endif %}
+            {% if admin or remove %}<th>Delete User</th>{% endif %}
+        </tr>
+        {% for user,valid in users %}
+        <tr>
+            <td>{{ user }}</td>
+            {% if admin or change %}<td><button>Permissions</button></td>{% endif %}
+            {% if admin or reset %}<td><button>Password</button></td>{% endif %}
+            {% if pause or admin%} <td>{% if valid %}<button>Pause</button> {% else %}
+                <button>Unpause</button>{% endif %}</td>{% endif %}
+            {% if admin or remove %} <td><button>Delete</button></td>{% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% else %}
+There was an error in getting the users.
+{% endif %}
+{% else %}<p>You do not have permission to view the content of this page.</p> {% endif %}
 <div id='new_user'>
     <form></form>
 </div>
-
-</html>
+{% endblock %}

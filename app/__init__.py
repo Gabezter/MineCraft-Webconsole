@@ -43,7 +43,6 @@ def app():
 
     app.register_error_handler(404, not_found)
     app.register_error_handler(500, internal_error)
-    admin_bp.register_error_handler(500, internal_error)
 
     setup_logging(app)
 

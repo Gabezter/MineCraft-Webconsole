@@ -1,3 +1,27 @@
+#footer {
+    background-color: gray;
+    color: black;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    margin-top: 2.5%;
+
+}
+
+#footer a {
+    color: black;
+}
+
+#footer a:hover {
+    color: #555;
+}
+
+body {
+    margin: 0;
+}
+
 nav ul {
     list-style-type: none;
     margin: 0;

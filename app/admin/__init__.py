@@ -42,10 +42,11 @@ def Login():
 @admin_bp.route('/console')
 @admin_bp.route('/')
 def Console():
-    if '/admin/login' in request.referrer:
-        db.get_console_permissions()
-        db.get_plugin_permissions()
-        db.get_user_permissions()
+    if request.referrer is not None:
+        if '/admin/login' in request.referrer:
+            db.get_console_permissions()
+            db.get_plugin_permissions()
+            db.get_user_permissions()
     return page('console')
 
 
@@ -194,21 +195,20 @@ def util_console(command):
 @admin_bp.before_app_request
 def load_logged_in_user():
     if(request.path != '/admin/login' and request.path != '/init' and request.path != '/dump'):
-        if (current_app.config['DEBUG'] is not True):
+        if (current_app.config['DEBUG_LOCAL'] is not True):
             user = session.get('username')
             if user is None:
                 session['username'] = None
                 return redirect(url_for('admin.Login'))
     else:
-        if (current_app.config['DEBUG'] is not True):
+        if (current_app.config['DEBUG_LOCAL'] is not True):
             user = session.get('username')
             if user is not None:
                 return redirect(url_for("admin.Console"))
 
 
 def page(page, **kargs):
-    url_for("static", filename='header.css')
-    url_for("static", filename='footer.css')
+    url_for("static", filename='base.css')
     if page == 'login':
         return login_page(p_invalid=False, p_error=False, p_logout=False)
     elif page == 'console':
@@ -238,12 +238,13 @@ def page(page, **kargs):
 
 @admin_bp.errorhandler(500)
 def internal_error(e):
+    print(e)
     return render_template('internal_error.html'), 500
 
 
 def console_page():
     url_for("static", filename='console.css')
-    if (current_app.config['DEBUG'] != True):
+    if (current_app.config['DEBUG_LOCAL'] != True):
         m_start = session['console']['stop']
         m_stop = session['console']['start']
         m_console_execute = session['console']['cmd']
@@ -267,7 +268,7 @@ def console_page():
 def plugins_page():
     url_for("static", filename='plugins.css')
     plugin_files = asyncio.run(plugins.get_plugins())
-    if (current_app.config['DEBUG'] != True):
+    if (current_app.config['DEBUG_LOCAL'] != True):
         m_admin = session['plugins']['admin']
         m_upload = session['plugins']['upload']
         m_remove = session['plugins']['remove']
@@ -291,7 +292,7 @@ def plugins_page():
 
 def configs_page():
     url_for("static", filename='configs.css')
-    if (current_app.config['DEBUG'] != True):
+    if (current_app.config['DEBUG_LOCAL'] != True):
         m_admin = session['plugins']['admin']
         m_edit_configs = session['plugins']['edit_configs']
     else:
@@ -311,7 +312,7 @@ def configs_page():
 
 def users_page():
     url_for("static", filename='users.css')
-    if (current_app.config['DEBUG'] != True):
+    if (current_app.config['DEBUG_LOCAL'] != True):
         m_admin = session['user']['admin']
         m_create = session['user']['create']
         m_assign = session['user']['assign']
@@ -337,7 +338,12 @@ def users_page():
         key = '33284'
     else:
         key = session['key']
-    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=username, users=db.list_users()))
+    list_users = db.list_users()
+    if list_users == False:
+        error = True
+    else:
+        error = False
+    return make_response(render_template('users.html', admin=m_admin, create=m_create, assign=m_assign, change=m_change, remove=m_remove, reset=m_reset, view=m_view, pause=m_pause, username=username, users=list_users, error=error))
 
 
 def user_page(p_username):

@@ -1,11 +1,12 @@
-<html>
-
-<head>
-    <title>Console Page</title>
-    <link rel="stylesheet" type="text/css" href="/static/console.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    {% if console_execute or admin %}
-    <script type=text/javascript>
+{% extends 'base.html' %}
+{% block title %}Console{% endblock %}
+{% block head%}
+{{ super() }}
+<title>Console Page</title>
+<link rel="stylesheet" type="text/css" href="/static/console.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+{% if console_execute or admin %}
+<script type=text/javascript>
         function submit_command(){
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/admin/util/console/command', true);
@@ -32,9 +33,9 @@
             }
         })
         </script>
-    {% endif %}
-    {% if start or admin %}
-    <script type=text/javascript>
+{% endif %}
+{% if start or admin %}
+<script type=text/javascript>
         function start_command(){
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/admin/util/console/start', true);
@@ -53,9 +54,9 @@
                 }
             };
         }</script>
-    {% endif %}
-    {% if stop or admin %}
-    <script type=text/javascript>
+{% endif %}
+{% if stop or admin %}
+<script type=text/javascript>
         function stop_command(){
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/admin/util/console/stop', true);
@@ -74,9 +75,9 @@
                 }
             };
         }</script>
-    {% endif %}
-    {% if (start and stop) or admin %}
-    <script type=text/javascript>
+{% endif %}
+{% if (start and stop) or admin %}
+<script type=text/javascript>
         function restart_command(){
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/admin/util/console/restart', true);
@@ -95,30 +96,26 @@
                 }
             };
         }</script>
-    {% endif %}
+{% endif %}
 
-</head>
-<header>{% include "header.html" %}</header>
+{% endblock %}
+{% block content %}
 
-<body>
-    <div class='console'>
-        <div class='buttons'>
-            {% if start or admin %}<button value='START' onclick="start_command()">START</button>
-            {% endif %}
-            {% if stop or admin %}
-            <button type='button' value='STOP' onclick="stop_command()">STOP</button>
-            {% endif %}
-            {% if (start and stop) or admin %}
-            <button type='button' value='RESTART' onclick="restart_command()">RESTART</button>
-            {% endif %}</div>
-        <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
-        {% if console_execute or admin %}
-        <div name='console_command'><input type="text" id='command_input'><input type="button" value="Enter"
-                id='submit_btn' onclick="submit_command()">
-        </div>
+<div class='console'>
+    <div class='buttons'>
+        {% if start or admin %}<button value='START' onclick="start_command()">START</button>
         {% endif %}
+        {% if stop or admin %}
+        <button type='button' value='STOP' onclick="stop_command()">STOP</button>
+        {% endif %}
+        {% if (start and stop) or admin %}
+        <button type='button' value='RESTART' onclick="restart_command()">RESTART</button>
+        {% endif %}</div>
+    <iframe src='partials/console-text.html' title='Minecraft Server Console'></iframe>
+    {% if console_execute or admin %}
+    <div name='console_command'><input type="text" id='command_input'><input type="button" value="Enter" id='submit_btn'
+            onclick="submit_command()">
     </div>
-</body>
-<footer>{% include "footer.html" %}</footer>
-
-</html>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,10 +1,22 @@
-<div>
-    <link rel="stylesheet" type="text/css" href="/static/footer.css">
+<html>
+
+{% block head %}
+
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/base.css">
+</head>
+
+{% endblock %}
+
+<body>{% block content %} {% endblock %}</body>
+<div id='footer'>
     <br>
     This console was created to be used on self hosted machines.<br>
     If any issues arise please create an <a href="https://github.com/Gabezter/MineCraft-Webconsole/issues/new">issue</a>
     on the github.<br>
     Created by Gabezter and posted on <a href='https://github.com/Gabezter/MineCraft-Webconsole'>Github</a> <br>
     <a href='https://github.com/Gabezter/MineCraft-Webconsole/blob/master/LICENSE'>License: Apache License 2.0</a>
-    <br><br>
-</div>
+    <br><br></div>
+
+</html>

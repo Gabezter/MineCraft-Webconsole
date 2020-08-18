@@ -336,8 +336,13 @@ def submit_key(user):
 
 def list_users():
     db = get_db()
-    users_sql = db.execute('SELECT username,valid FROM user ')
-    users = []
-    for user in users_sql:
-        users.append((user[0], not yn_to_boolean(user[1])))
+    try:
+        users_sql = db.execute('SELECT username,valid FROM user ')
+        users = []
+        for user in users_sql:
+            users.append((user[0], not yn_to_boolean(user[1])))
+    except sqlite3.OperationalError as e:
+        log.Error.error(e)
+        users = False
+
     return users
